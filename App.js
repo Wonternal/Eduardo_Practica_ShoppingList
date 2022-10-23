@@ -20,6 +20,15 @@ const App = () => {
     setSelectedQuantity("Quantity")
   }
 
+  const handleOnPressProduct = (productId) => {
+    setProductList(productList.filter((product) => {
+      if (product.id === productId) {
+        product.bought = !product.bought
+      }
+      return product
+    }))
+  }
+
 
   return (
     <View style={styles.container}>
@@ -67,8 +76,8 @@ const App = () => {
               case "meat":
                 imagePath = require("./assets/meat.jpg")
                 break;
-              case "vegetables":
-                imagePath = require("./assets/vegetables.jpg")
+              case "vegetable":
+                imagePath = require("./assets/vegetable.jpg")
                 break;
               case "fish":
                 imagePath = require("./assets/fish.jpg")
@@ -80,13 +89,23 @@ const App = () => {
                 imagePath = require("./assets/fruit.jpg")
                 break;
             }
-
-            console.log(imagePath);
+            
             return (
-              <View style={styles.product} key={product.id}> 
-                <Image style={styles.productImage} source={imagePath}/>
-                <Text style={styles.whiteText}>{product.quantity} x {product.name}</Text>
-              </View>
+              product.bought 
+              ? <Pressable key={product.id} style={{width: "100%", alignItems: "center"}} onPress={() => handleOnPressProduct(product.id)}>
+                  <View style={[styles.product, {backgroundColor: "white"}]} key={product.id}> 
+                    <Image style={styles.productImage} source={imagePath}/>
+                    <Text style={[styles.whiteText, {textDecorationLine: "underline line-through", color: "black"}]}>{product.quantity} x {product.name}</Text>
+                  </View>
+                </Pressable>
+              : <Pressable key={product.id} style={{width: "100%", alignItems: "center"}} onPress={() => handleOnPressProduct(product.id)}>
+                  <View style={styles.product} key={product.id}> 
+                    <Image style={styles.productImage} source={imagePath}/>
+                    <Text style={styles.whiteText}>{product.quantity} x {product.name}</Text>
+                  </View>
+                </Pressable>
+
+
             )
           })}
         </ScrollView>
