@@ -1,51 +1,114 @@
-import { StyleSheet, Text, View, Button, TextInput} from 'react-native';
+import {StyleSheet, Text, View, Button, TextInput, ScrollView, Image, Pressable} from 'react-native';
 import {useState} from "react"
-import {Picker} from '@react-native-picker/picker';
+import uuid from 'react-native-uuid'
+import ModalSelector from 'react-native-modal-selector'
 
 const App = () => {
 
-  const [selectedQuantity, setSelectedQuantity] = useState(0)
+  const [selectedQuantity, setSelectedQuantity] = useState("Quantity")
   
-  const [selectedType, setSelectedType] = useState("noType")
+  const [selectedType, setSelectedType] = useState("Type")
 
   const [productName, setProductName] = useState("")
 
   const [productList, setProductList] = useState([])
+
+  const handleOnAdd = () => {
+    setProductList([...productList, {id:uuid.v4(), name:productName, quantity:selectedQuantity, bought:false, type:selectedType}])
+    setSelectedType("Type")
+    setProductName("")
+    setSelectedQuantity("Quantity")
+  }
+
+  const handleOnPressProduct = (productId) => {
+    setProductList(productList.filter((product) => {
+      if (product.id === productId) {
+        product.bought = !product.bought
+      }
+      return product
+    }))
+  }
 
 
   return (
     <View style={styles.container}>
 
       <View style={styles.inputContainer}>
+        <TextInput style={styles.productNameInput} placeholder=' Product name' value={productName} onChangeText={(value) => setProductName(value)}/>
 
-        <TextInput style={styles.productNameInput} placeholder=' Product name' onChangeText={(value) => setProductName(value)}/>
-
-        <Picker style={styles.quantityInput} selectedValue={selectedQuantity} onValueChange={(value) => setSelectedQuantity(value)}>
-          <Picker.Item label="Quantity" value="0" />
-          <Picker.Item label="1" value={1} />
-          <Picker.Item label="2" value={2} />
-          <Picker.Item label="3" value={3} />
-          <Picker.Item label="4" value={4} />
-          <Picker.Item label="5" value={5} />
-        </Picker>
-
-        <Picker style={styles.typeInput} selectedValue={selectedType} onValueChange={(value) => setSelectedType(value)}>
-          <Picker.Item label="Type" value="noType" />
-          <Picker.Item label="fruit" value="fruit" />
-          <Picker.Item label="vegetable" value="vegetable" />
-          <Picker.Item label="bakery" value="bakery" />
-          <Picker.Item label="fish" value="fish" />
-          <Picker.Item label="meat" value="meat" />
-        </Picker>
+        <ModalSelector
+          style={styles.quantityInput}
+          data={[
+            { key: 1, label: '1' },
+            { key: 2, label: '2'},
+            { key: 3, label: '3'},
+            { key: 4, label: '4'},
+            { key: 5, label: '5'}
+          ]}
+          initValue={selectedQuantity.toString()}
+          onChange={(option)=>{ setSelectedQuantity(option.key)}} />
+        
+        <ModalSelector
+          style={styles.typeInput}
+          data={[
+            { key: "fruit", label: 'fruit' },
+            { key: 'vegetable', label: 'vegetable'},
+            { key: 'bakery', label: 'bakery'},
+            { key: 'fish', label: 'fish'},
+            { key: 'meat', label: 'meat'}
+          ]}
+          initValue={selectedType}
+          onChange={(option)=>{ setSelectedType(option.key)}} />
 
         <View style={styles.addButton}>
-          <Button title='Add' onPress={() => console.log(productName,selectedQuantity,selectedType,)}/>
+          {productName !== "" && selectedQuantity !== "Quantity" && selectedType !== "Type" 
+          ? <Button title='Add' onPress={() => handleOnAdd()}/>
+          : <Button title='Add' disabled/>}
         </View>
-
       </View>
 
       <View style={styles.listContainer}>
-        <Text>Lista</Text>
+        <ScrollView style={{width:"100%"}} contentContainerStyle={{alignItems: "center"}}>
+          {productList.map((product) => {
+            let imagePath;
+            
+            switch (product.type) {
+              case "meat":
+                imagePath = require("./assets/meat.jpg")
+                break;
+              case "vegetable":
+                imagePath = require("./assets/vegetable.jpg")
+                break;
+              case "fish":
+                imagePath = require("./assets/fish.jpg")
+                break;
+              case "bakery":
+                imagePath = require("./assets/bakery.jpg")
+                break;
+              case "fruit":
+                imagePath = require("./assets/fruit.jpg")
+                break;
+            }
+            
+            return (
+              product.bought 
+              ? <Pressable key={product.id} style={{width: "100%", alignItems: "center"}} onPress={() => handleOnPressProduct(product.id)}>
+                  <View style={[styles.product, {backgroundColor: "white"}]} key={product.id}> 
+                    <Image style={styles.productImage} source={imagePath}/>
+                    <Text style={[styles.whiteText, {textDecorationLine: "underline line-through", color: "black"}]}>{product.quantity} x {product.name}</Text>
+                  </View>
+                </Pressable>
+              : <Pressable key={product.id} style={{width: "100%", alignItems: "center"}} onPress={() => handleOnPressProduct(product.id)}>
+                  <View style={styles.product} key={product.id}> 
+                    <Image style={styles.productImage} source={imagePath}/>
+                    <Text style={styles.whiteText}>{product.quantity} x {product.name}</Text>
+                  </View>
+                </Pressable>
+
+
+            )
+          })}
+        </ScrollView>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -57,12 +120,14 @@ const App = () => {
 }
 
 const styles = StyleSheet.create({
-
+  // Container Styles
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#D3D3D3",
+    
   },
 
+  // InputContainer styles
   inputContainer: {
     flex: 2,
     justifyContent: "space-evenly",
@@ -78,11 +143,11 @@ const styles = StyleSheet.create({
   productNameInput: {
     borderColor: "black",
     borderWidth: 2,
-    height: 53,
     width: "50%",
     marginTop: 10,
     borderRadius: 5,
-    backgroundColor: "white"
+    backgroundColor: "white",
+    textAlign: "center"
   },
 
   quantityInput: {
@@ -109,10 +174,41 @@ const styles = StyleSheet.create({
     marginTop: "5%"
   },
 
+  // listContainer styles
   listContainer: {
     flex: 6,
+    marginHorizontal: 20,
+    backgroundColor: "grey",
+    borderColor: "black",
+    borderWidth: 2,
+    borderRadius: 10,
   },
 
+
+  product: {
+    justifyContent:"space-between",
+    alignItems: "center",
+    flexDirection: "row",
+    height: 60,
+    width: "90%",
+    backgroundColor: "black",
+    borderRadius: 5,
+    marginTop: 10,
+  },
+
+  whiteText:{
+    marginHorizontal:20,
+    color: "white"
+  },
+
+  productImage:{
+    marginHorizontal:20,
+    height:50,
+    width:50
+  },
+
+
+  // buttonContainer styles
   buttonContainer: {
     flex: 2,
     justifyContent: "center",
