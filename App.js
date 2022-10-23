@@ -112,7 +112,9 @@ const App = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <Button title='clear'/>
+        {productList.length > 0 
+        ? <Button title='clear' onPress={() => setProductList([])}/>
+        : <Button title='clear' disabled/>}
       </View>
 
     </View>
