@@ -68,6 +68,10 @@ const App = () => {
       </View>
 
       <View style={styles.listContainer}>
+        {productList.length === 0
+        ? <Text style={[styles.whiteText, {textAlign:'center', marginTop: 20}]}>Empty Shopping List</Text>
+        : null
+        }
         <ScrollView style={{width:"100%"}} contentContainerStyle={{alignItems: "center"}}>
           {productList.map((product) => {
             let imagePath;
